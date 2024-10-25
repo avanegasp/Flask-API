@@ -43,8 +43,37 @@ def handle_hello():
         "msg": "Hello, this is your GET /user response "
     }
 
-    return jsonify(response_body), 200
+    return jsonify(response_body),200
 
+@app.route("/user", methods=["POST"]) 
+def create_user():
+    request_body = request.get_json()
+
+    email = request_body.get("email", None)
+    password = request_body.get("password", None)
+    is_active = request_body.get("is_active", True)
+
+    required_fields = ["email", "password"]
+
+    for field in required_fields:
+        if field not in request_body:
+            return jsonify({"error": f"Falta el campo {field}"}),400
+
+    if email is None or password is None:
+        return jsonify({"error": "No se recibió el email o la contraseña"}),400
+    
+    user = User(email=email, password=password, is_active=is_active)
+
+    try:
+        db.session.add(user)
+        db.session.commit()
+        db.session.refresh(user)
+
+        return jsonify({"message": f"User {user.email} created successfully!"}),201
+    
+    except Exception as error:
+        return jsonify({"error": f"{error}"}),500
+    
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
