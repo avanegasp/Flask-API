@@ -83,10 +83,25 @@ def get_user_id(user_id):
     try:
         user_id = User.query.get(user_id)
         if user_id is None:
-            return jsonify({"error": "user_id no se encuentra"}),404
+            return jsonify({"error": "Este user_id no se encuentra"}),404
         return jsonify({"user": user_id.serialize()}),200
     except Exception as error:
         return jsonify({"error": f"falta el campo{error}"})
+    
+@app.route("/user/<int:user_id>", methods=["DELETE"])
+def get_user_delete(user_id):
+    try:
+        user = User.query.get(user_id)
+        if user is None:
+            return jsonify({"message":"Este usuario no se encuentra"}),400
+        db.session.delete(user)
+        db.session.commit()
+
+        return jsonify({"message":f"Este usuario {user_id} esta borrado"}),200
+
+    except Exception as error:
+        db.session.rollback()
+        return jsonify({"error":f"{error}"}),500    
     
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
