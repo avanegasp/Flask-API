@@ -36,14 +36,17 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
-@app.route('/user', methods=['GET'])
-def handle_hello():
+@app.route('/users', methods=['GET'])
+def get_all_users():
+    try:
+        users = User.query.all()
+        if not users:
+            return jsonify({"error": "No hay usuarios"}),400
+        serialized_users = [user.serialize() for user in users]
+        return jsonify({"users": serialized_users}),200
+    except Exception as error:
+        return jsonify({"error":str(error)}),400
 
-    response_body = {
-        "msg": "Hello, this is your GET /user response "
-    }
-
-    return jsonify(response_body),200
 
 @app.route("/user", methods=["POST"]) 
 def create_user():
@@ -73,6 +76,17 @@ def create_user():
     
     except Exception as error:
         return jsonify({"error": f"{error}"}),500
+    
+
+@app.route("/user/<int:user_id>", methods=["GET"])
+def get_user_id(user_id):
+    try:
+        user_id = User.query.get(user_id)
+        if user_id is None:
+            return jsonify({"error": "user_id no se encuentra"}),404
+        return jsonify({"user": user_id.serialize()}),200
+    except Exception as error:
+        return jsonify({"error": f"falta el campo{error}"})
     
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
