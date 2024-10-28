@@ -103,6 +103,34 @@ def get_user_delete(user_id):
         db.session.rollback()
         return jsonify({"error":f"{error}"}),500    
     
+@app.route("/user/<int:user_id>", methods=["PUT"])
+def update_user(user_id):
+    body = request.json
+
+    user = User.query.get(user_id)
+    if user is None:
+        return jsonify({"error": "User no se encuentra"}),404
+    
+    required_fields =["email", "password"]
+
+    missing_fields = [field for field in required_fields if field not in body]
+    if missing_fields:
+        return jsonify({"error": f"Missing fields:{', '.join(missing_fields)}"}),400
+    
+    email = body.get("email", None)
+    password = body.get("password", None)
+
+    user.email = email
+    user.password = password
+
+    try:
+        db.session.commit()
+        return jsonify({"user": user.serialize()}),200
+    
+    except Exception as error:
+        db.session.rollback()
+        return jsonify({"error": str(error)}),500
+
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
