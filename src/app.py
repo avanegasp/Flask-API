@@ -130,6 +130,7 @@ def update_user(user_id):
     except Exception as error:
         db.session.rollback()
         return jsonify({"error": str(error)}),500
+        
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
